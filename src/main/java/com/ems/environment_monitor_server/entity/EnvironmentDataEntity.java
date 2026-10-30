@@ -1,5 +1,8 @@
 package com.ems.environment_monitor_server.entity;
 
+import java.time.LocalDateTime;
+
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,9 +15,17 @@ public class EnvironmentDataEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "temperature")
     private int temperature;
+
+    @Column(name = "humidity")
     private float humidity;
+
+    @Column(name = "co2Level")
     private int co2Level;
+
+    @Column(name = "measuredAt")
+    private LocalDateTime measuredAt;
 
     public EnvironmentDataEntity() {
     }
@@ -49,5 +60,13 @@ public class EnvironmentDataEntity {
 
     public void setCo2Level(int co2Level) {
         this.co2Level = co2Level;
+    }
+
+    public LocalDateTime getMeasuredAt() {
+        return measuredAt;
+    }
+
+    public void setMeasuredAt(LocalDateTime measuredAt) {
+        this.measuredAt = measuredAt;
     }
 }
