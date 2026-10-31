@@ -21,11 +21,14 @@ public class EnvironmentDataEntity {
     @Column(name = "humidity")
     private float humidity;
 
-    @Column(name = "co2Level")
+    @Column(name = "co2_level")
     private int co2Level;
 
-    @Column(name = "measuredAt")
+    @Column(name = "measured_at")
     private LocalDateTime measuredAt;
+
+    @Column(name = "device_name")
+    private String deviceName;
 
     public EnvironmentDataEntity() {
     }
@@ -68,5 +71,13 @@ public class EnvironmentDataEntity {
 
     public void setMeasuredAt(LocalDateTime measuredAt) {
         this.measuredAt = measuredAt;
+    }
+
+    public String getDeviceName() {
+        return deviceName;
+    }
+
+    public void setDeviceName(String deviceName) {
+        this.deviceName = deviceName;
     }
 }

@@ -55,6 +55,19 @@ class EnvironmentDataController {
         }
     }
 
+    @GetMapping("{deviceName}")
+    public  ResponseEntity<List<EnvironmentDataEntity>> getAllByDeviceName(@PathVariable("deviceName") String deviceName) {
+        try {
+            List<EnvironmentDataEntity> items = repository.findByDeviceName(deviceName);
+            if (items.isEmpty()) {
+                return ResponseEntity.noContent().build();
+            }
+            return ResponseEntity.ok(items);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();  
+        }
+    }
+
     @PostMapping
     public ResponseEntity<EnvironmentDataEntity> create(@RequestBody EnvironmentDataEntity item) {
         try {
@@ -82,6 +95,16 @@ class EnvironmentDataController {
     public ResponseEntity<HttpStatus> delete(@PathVariable("id") Long id) {
         try {
             repository.deleteById(id);
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
+        }
+    }
+
+    @DeleteMapping("{deviceName}")
+    public ResponseEntity<HttpStatus> deleteDevice(@PathVariable("deviceName") String deviceName) {
+        try {
+            repository.deleteByDeviceName(deviceName);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
