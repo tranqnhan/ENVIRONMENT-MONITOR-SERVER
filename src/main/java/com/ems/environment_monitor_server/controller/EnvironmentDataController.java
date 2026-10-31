@@ -101,7 +101,7 @@ class EnvironmentDataController {
         }
     }
 
-    @DeleteMapping("{deviceName}")
+    @DeleteMapping("device/{deviceName}")
     public ResponseEntity<HttpStatus> deleteDevice(@PathVariable("deviceName") String deviceName) {
         try {
             repository.deleteByDeviceName(deviceName);
