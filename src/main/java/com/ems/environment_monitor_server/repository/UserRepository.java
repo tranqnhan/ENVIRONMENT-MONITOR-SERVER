@@ -34,5 +34,5 @@ public interface UserRepository extends JpaRepository<AppUser, Long> {
         @Param("lastLogin") Instant lastLogin
     );
 
-    String findPasswordHashByUsername(@Param("username") String username);
+    AppUser findByUsername(@Param("username") String username);
 }
