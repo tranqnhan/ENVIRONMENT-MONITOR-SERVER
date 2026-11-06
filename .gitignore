@@ -37,3 +37,6 @@ out/
 .vscode/
 
 *.sh
+*.p12
+*.pfx
+*.key
