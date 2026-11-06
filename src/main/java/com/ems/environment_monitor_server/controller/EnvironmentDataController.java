@@ -15,11 +15,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ems.environment_monitor_server.entity.EnvironmentDataEntity;
+import com.ems.environment_monitor_server.entity.EnvironmentData;
 import com.ems.environment_monitor_server.repository.EnvironmentDataRepository;
 
 @RestController
-@RequestMapping("/ems-data")
+@RequestMapping("data")
 class EnvironmentDataController {
 
     @Autowired
@@ -30,9 +30,9 @@ class EnvironmentDataController {
     }
 
     @GetMapping
-    public ResponseEntity<List<EnvironmentDataEntity>> getAll() {
+    public ResponseEntity<List<EnvironmentData>> getAll() {
         try {
-            List<EnvironmentDataEntity> items = new ArrayList<>();
+            List<EnvironmentData> items = new ArrayList<>();
 
             repository.findAll().forEach(items::add);
 
@@ -45,8 +45,8 @@ class EnvironmentDataController {
     }
 
     @GetMapping("{id}")
-    public ResponseEntity<EnvironmentDataEntity> getById(@PathVariable("id") Long id) {
-        Optional<EnvironmentDataEntity> existingItemOptional = repository.findById(id);
+    public ResponseEntity<EnvironmentData> getById(@PathVariable("id") Long id) {
+        Optional<EnvironmentData> existingItemOptional = repository.findById(id);
 
         if (existingItemOptional.isPresent()) {
             return ResponseEntity.ok(existingItemOptional.get());
@@ -55,6 +55,7 @@ class EnvironmentDataController {
         }
     }
 
+/* Move to EnvironmentDeviceController
     @GetMapping("{deviceName}")
     public  ResponseEntity<List<EnvironmentDataEntity>> getAllByDeviceName(@PathVariable("deviceName") String deviceName) {
         try {
@@ -67,11 +68,11 @@ class EnvironmentDataController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();  
         }
     }
-
-    @PostMapping
-    public ResponseEntity<EnvironmentDataEntity> create(@RequestBody EnvironmentDataEntity item) {
+*/
+    @PostMapping("add")
+    public ResponseEntity<EnvironmentData> create(@RequestBody EnvironmentData item) {
         try {
-            EnvironmentDataEntity savedItem = repository.save(item);
+            EnvironmentData savedItem = repository.save(item);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
@@ -101,7 +102,8 @@ class EnvironmentDataController {
         }
     }
 
-    @DeleteMapping("device/{deviceName}")
+/* Move to EnvironmentDeviceController
+    @DeleteMapping("delete/device/{deviceName}")
     public ResponseEntity<HttpStatus> deleteDevice(@PathVariable("deviceName") String deviceName) {
         try {
             repository.deleteByDeviceName(deviceName);
@@ -110,4 +112,5 @@ class EnvironmentDataController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
         }
     }
+*/
 }
