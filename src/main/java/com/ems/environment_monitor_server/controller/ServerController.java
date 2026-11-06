@@ -9,15 +9,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ems.environment_monitor_server.repository.UserRepository;
+import com.ems.environment_monitor_server.request.AuthRequest;
 
 @RestController
 @RequestMapping("server")
 class ServerController {
     @Autowired 
-    private UserRepository repository;
+    UserRepository repository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder;
+    PasswordEncoder passwordEncoder;
    
     public ServerController(UserRepository repository, PasswordEncoder passwordEncoder) {
         this.repository = repository;
@@ -26,12 +27,11 @@ class ServerController {
 
 
     @PostMapping("auth")
-    public ResponseEntity<String> authenticate(@RequestBody String password) {
-
-        String passwordHash = repository.findPasswordHashByUsername("admin");
-
-        if (passwordEncoder.matches(password, passwordHash)) {
-            return ResponseEntity.ok("Success");
+    public ResponseEntity<Void> authenticate(@RequestBody AuthRequest auth) {
+        String passwordHash = repository.findByUsername("admin").getPasswordHash();
+        
+        if (passwordEncoder.matches(auth.getPassword(), passwordHash)) {
+            return ResponseEntity.ok().build();
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
