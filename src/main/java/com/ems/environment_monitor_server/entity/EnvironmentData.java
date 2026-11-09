@@ -1,6 +1,6 @@
 package com.ems.environment_monitor_server.entity;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,7 +25,7 @@ public class EnvironmentData {
     private int co2Level;
 
     @Column(nullable = false)
-    private LocalDateTime measuredAt;
+    private Instant measuredAt;
 
     @Column(nullable = false)
     private String deviceName;
