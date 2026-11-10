@@ -28,7 +28,7 @@ public class EnvironmentData {
     private Instant measuredAt;
 
     @Column(nullable = false)
-    private String deviceName;
+    private String monitorDeviceName;
 
     public EnvironmentData() {
     }
@@ -65,19 +65,19 @@ public class EnvironmentData {
         this.co2Level = co2Level;
     }
 
-    public LocalDateTime getMeasuredAt() {
+    public String getMonitorDeviceName() {
+        return monitorDeviceName;
+    }
+
+    public void setMonitorDeviceUsername(String deviceName) {
+        this.monitorDeviceName = deviceName;
+    }
+
+    public Instant getMeasuredAt() {
         return measuredAt;
     }
 
-    public void setMeasuredAt(LocalDateTime measuredAt) {
+    public void setMeasuredAt(Instant measuredAt) {
         this.measuredAt = measuredAt;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
     }
 }

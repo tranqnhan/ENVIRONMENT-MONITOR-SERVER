@@ -49,7 +49,7 @@ class MonitorDeviceController {
 
             monitorDeviceRepository.save(device);
 
-            return ResponseEntity.ok().build();
+            return ResponseEntity.status(HttpStatus.CREATED).build();
         } 
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();

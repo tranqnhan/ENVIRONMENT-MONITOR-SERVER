@@ -7,6 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,16 +20,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ems.environment_monitor_server.entity.EnvironmentData;
 import com.ems.environment_monitor_server.repository.EnvironmentDataRepository;
+import com.ems.environment_monitor_server.repository.MonitorDeviceRepository;
 
 @RestController
 @RequestMapping("data")
 class EnvironmentDataController {
 
     @Autowired
-    EnvironmentDataRepository repository;
+    EnvironmentDataRepository environmentDataRepository;
 
-    public EnvironmentDataController(EnvironmentDataRepository repository) {
-        this.repository = repository;
+    @Autowired
+    MonitorDeviceRepository monitorDeviceRepository;
+
+    @Autowired
+    PasswordEncoder passwordEncoder;
+
+    public EnvironmentDataController(EnvironmentDataRepository environmentDataRepository, MonitorDeviceRepository monitorDeviceRepository, PasswordEncoder passwordEncoder) {
+        this.environmentDataRepository = environmentDataRepository;
+        this.monitorDeviceRepository = monitorDeviceRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping
@@ -34,7 +46,7 @@ class EnvironmentDataController {
         try {
             List<EnvironmentData> items = new ArrayList<>();
 
-            repository.findAll().forEach(items::add);
+            environmentDataRepository.findAll().forEach(items::add);
 
             if (items.isEmpty())
                 return ResponseEntity.noContent().build();
@@ -46,7 +58,7 @@ class EnvironmentDataController {
 
     @GetMapping("{id}")
     public ResponseEntity<EnvironmentData> getById(@PathVariable("id") Long id) {
-        Optional<EnvironmentData> existingItemOptional = repository.findById(id);
+        Optional<EnvironmentData> existingItemOptional = environmentDataRepository.findById(id);
 
         if (existingItemOptional.isPresent()) {
             return ResponseEntity.ok(existingItemOptional.get());
@@ -70,9 +82,23 @@ class EnvironmentDataController {
     }
 */
     @PostMapping("add")
-    public ResponseEntity<EnvironmentData> create(@RequestBody EnvironmentData item) {
+    public ResponseEntity<EnvironmentData> create(
+        Authentication auth, 
+        @RequestBody EnvironmentData item
+    ) {
         try {
-            EnvironmentData savedItem = repository.save(item);
+            UsernamePasswordAuthenticationToken upAuth = (UsernamePasswordAuthenticationToken) auth;
+
+            if (
+                monitorDeviceRepository.existsByUsername(upAuth.getName()) &&
+                passwordEncoder.
+            
+            ) {
+
+            }
+            
+            item.setMonitorDeviceUsername(upAuth.getName());
+            EnvironmentData savedItem = environmentDataRepository.save(item);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
@@ -95,7 +121,7 @@ class EnvironmentDataController {
     @DeleteMapping("{id}")
     public ResponseEntity<HttpStatus> delete(@PathVariable("id") Long id) {
         try {
-            repository.deleteById(id);
+            environmentDataRepository.deleteById(id);
             return ResponseEntity.noContent().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
