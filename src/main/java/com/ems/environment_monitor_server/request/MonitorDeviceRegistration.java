@@ -2,8 +2,8 @@ package com.ems.environment_monitor_server.request;
 
 public class MonitorDeviceRegistration {
     private String serverAdminPassword;
-    private String deviceUsername;
-    private String devicePassword;
+    private String monitorDeviceUsername;
+    private String monitorDevicePassword;
 
     public String getServerAdminPassword() {
         return serverAdminPassword;
@@ -13,19 +13,19 @@ public class MonitorDeviceRegistration {
         this.serverAdminPassword = databasePassword;
     }
 
-    public String getDeviceUsername() {
-        return deviceUsername;
+    public String getMonitorDeviceUsername() {
+        return monitorDeviceUsername;
     }
 
-    public void setDeviceUsername(String deviceUsername) {
-        this.deviceUsername = deviceUsername;
+    public void setMonitorDeviceUsername(String deviceUsername) {
+        this.monitorDeviceUsername = deviceUsername;
     }
 
-    public String getDevicePassword() {
-        return devicePassword;
+    public String getMonitorDevicePassword() {
+        return monitorDevicePassword;
     }
 
-    public void setDevicePassword(String devicePassword) {
-        this.devicePassword = devicePassword;
+    public void setMonitorDevicePassword(String devicePassword) {
+        this.monitorDevicePassword = devicePassword;
     }
 }

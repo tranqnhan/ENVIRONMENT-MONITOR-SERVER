@@ -39,13 +39,13 @@ class MonitorDeviceController {
         String serverAdminPassword = userRepository.findByUsername("admin").getPasswordHash();
         if (passwordEncoder.matches(registration.getServerAdminPassword(), serverAdminPassword)) {
 
-            if (monitorDeviceRepository.existsByUsername(registration.getDeviceUsername())) {
+            if (monitorDeviceRepository.existsByUsername(registration.getMonitorDeviceUsername())) {
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             }
 
             MonitorDevice device = new MonitorDevice();
-            device.setUsername(registration.getDeviceUsername());
-            device.setPassword(registration.getDevicePassword());
+            device.setUsername(registration.getMonitorDeviceUsername());
+            device.setPassword(passwordEncoder.encode(registration.getMonitorDevicePassword()));
 
             monitorDeviceRepository.save(device);
 

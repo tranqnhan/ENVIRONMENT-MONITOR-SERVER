@@ -7,8 +7,6 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ems.environment_monitor_server.entity.EnvironmentData;
 import com.ems.environment_monitor_server.repository.EnvironmentDataRepository;
 import com.ems.environment_monitor_server.repository.MonitorDeviceRepository;
+import com.ems.environment_monitor_server.request.EnvironmentDataPost;
 
 @RestController
 @RequestMapping("data")
@@ -67,56 +66,36 @@ class EnvironmentDataController {
         }
     }
 
-/* Move to EnvironmentDeviceController
-    @GetMapping("{deviceName}")
-    public  ResponseEntity<List<EnvironmentDataEntity>> getAllByDeviceName(@PathVariable("deviceName") String deviceName) {
-        try {
-            List<EnvironmentDataEntity> items = repository.findByDeviceName(deviceName);
-            if (items.isEmpty()) {
-                return ResponseEntity.noContent().build();
-            }
-            return ResponseEntity.ok(items);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();  
-        }
-    }
-*/
     @PostMapping("add")
     public ResponseEntity<EnvironmentData> create(
-        Authentication auth, 
-        @RequestBody EnvironmentData item
+        @RequestBody EnvironmentDataPost item
     ) {
         try {
-            UsernamePasswordAuthenticationToken upAuth = (UsernamePasswordAuthenticationToken) auth;
-
+            String monitorDeviceUsername = item.getMonitorDeviceUsername();
             if (
-                monitorDeviceRepository.existsByUsername(upAuth.getName()) &&
-                passwordEncoder.
-            
+                monitorDeviceRepository.existsByUsername(monitorDeviceUsername) &&
+                passwordEncoder.matches(
+                    item.getMonitorDevicePassword(), 
+                    monitorDeviceRepository.findByUsername(monitorDeviceUsername).getPassword()
+                )
             ) {
-
+                EnvironmentData data = new EnvironmentData();
+                data.setCo2Level(item.getCo2Level());
+                data.setHumidity(item.getHumidity());
+                data.setTemperature(item.getTemperature());
+                data.setMeasuredAt(item.getMeasuredAt());
+                data.setMonitorDeviceUsername(monitorDeviceUsername);
+                
+                environmentDataRepository.save(data);
+                return ResponseEntity.status(HttpStatus.CREATED).body(data);
             }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             
-            item.setMonitorDeviceUsername(upAuth.getName());
-            EnvironmentData savedItem = environmentDataRepository.save(item);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
         }
     }
-
-    // @PutMapping("{id}")
-    // public ResponseEntity<EnvironmentDataEntity> update(@PathVariable("id") Long id, @RequestBody EnvironmentDataEntity item) {
-    //     Optional<EnvironmentDataEntity> existingItemOptional = repository.findById(id);
-    //     if (existingItemOptional.isPresent()) {
-    //         EnvironmentDataEntity existingItem = existingItemOptional.get();
-    //         System.out.println("TODO for developer - update logic is unique to entity and must be implemented manually.");
-    //         //existingItem.setSomeField(item.getSomeField());
-    //         return new ResponseEntity<>(repository.save(existingItem), HttpStatus.OK);
-    //     } else {
-    //         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    //     }
-    // }
 
     @DeleteMapping("{id}")
     public ResponseEntity<HttpStatus> delete(@PathVariable("id") Long id) {
@@ -127,16 +106,4 @@ class EnvironmentDataController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
         }
     }
-
-/* Move to EnvironmentDeviceController
-    @DeleteMapping("delete/device/{deviceName}")
-    public ResponseEntity<HttpStatus> deleteDevice(@PathVariable("deviceName") String deviceName) {
-        try {
-            repository.deleteByDeviceName(deviceName);
-            return ResponseEntity.noContent().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
-        }
-    }
-*/
 }

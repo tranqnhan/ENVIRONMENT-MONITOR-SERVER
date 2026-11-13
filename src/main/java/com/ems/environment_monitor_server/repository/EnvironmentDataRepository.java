@@ -9,6 +9,6 @@ import com.ems.environment_monitor_server.entity.EnvironmentData;
 
 @RepositoryRestResource
 public interface EnvironmentDataRepository extends CrudRepository<EnvironmentData, Long> {
-    List<EnvironmentData> findByDeviceName(String deviceName);
-    List<EnvironmentData> deleteByDeviceName(String deviceName);
+    List<EnvironmentData> findByMonitorDeviceUsername(String monitorDeviceUsername);
+    List<EnvironmentData> deleteByMonitorDeviceUsername(String monitorDeviceUsername);
 }

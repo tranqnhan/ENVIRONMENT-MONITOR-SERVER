@@ -5,8 +5,10 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
 import com.ems.environment_monitor_server.entity.MonitorDevice;
 
+
 @RepositoryRestResource
 public interface MonitorDeviceRepository extends CrudRepository<MonitorDevice, Long> {
     Boolean existsByUsername(String username);
+    MonitorDevice findByUsername(String username);
 }
     
