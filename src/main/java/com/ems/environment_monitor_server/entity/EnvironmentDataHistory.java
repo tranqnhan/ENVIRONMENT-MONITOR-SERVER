@@ -19,13 +19,13 @@ public class EnvironmentDataHistory {
     private Long id;
 
     @Column(nullable = false)
-    private int temperature;
+    private float temperature;
 
     @Column(nullable = false)
     private float humidity;
 
     @Column(nullable = false)
-    private int co2Level;
+    private float co2Level;
 
     @Column(nullable = false)
     private Instant measuredAt;
@@ -45,11 +45,11 @@ public class EnvironmentDataHistory {
         this.id = id;
     }
 
-    public int getTemperature() {
+    public float getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(int temperature) {
+    public void setTemperature(float temperature) {
         this.temperature = temperature;
     }
 
@@ -61,11 +61,11 @@ public class EnvironmentDataHistory {
         this.humidity = humidity;
     }
 
-    public int getCo2Level() {
+    public float getCo2Level() {
         return co2Level;
     }
 
-    public void setCo2Level(int co2Level) {
+    public void setCo2Level(float co2Level) {
         this.co2Level = co2Level;
     }
 

@@ -1,5 +1,7 @@
 package com.ems.environment_monitor_server.controller;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,38 +63,6 @@ class EnvironmentDataController {
         }
     }
 
-    @PostMapping("add")
-    public ResponseEntity<EnvironmentDataHistory> add(
-        @RequestBody EnvironmentDataPost item
-    ) {
-        try {
-            String monitorDeviceUsername = item.getMonitorDeviceUsername();
-            Optional<MonitorDevice> monitorDeviceOp = monitorDeviceRepository.findByUsername(monitorDeviceUsername);
-            if (
-                monitorDeviceOp.isPresent() &&
-                passwordEncoder.matches(
-                    item.getMonitorDevicePassword(), 
-                    monitorDeviceOp.get().getPassword()
-                )
-            ) {
-                EnvironmentDataHistory data = new EnvironmentDataHistory();
-                data.setCo2Level(item.getCo2Level());
-                data.setHumidity(item.getHumidity());
-                data.setTemperature(item.getTemperature());
-                data.setMeasuredAt(item.getMeasuredAt());
-                data.setMonitorDevice(monitorDeviceOp.get());
-                
-                environmentDataRepository.save(data);
-                return ResponseEntity.status(HttpStatus.CREATED).body(data);
-            }
-
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
-        }
-    }
-
     @PostMapping("current")
     public ResponseEntity<CurrentEnvironmentData> current (
         @RequestBody EnvironmentDataPost item
@@ -100,32 +70,69 @@ class EnvironmentDataController {
         try {
             String monitorDeviceUsername = item.getMonitorDeviceUsername();
             Optional<MonitorDevice> monitorDeviceOp = monitorDeviceRepository.findByUsername(monitorDeviceUsername);
-            if (
-                monitorDeviceOp.isPresent() &&
+            if (!(monitorDeviceOp.isPresent() &&
                 passwordEncoder.matches(
                     item.getMonitorDevicePassword(), 
                     monitorDeviceOp.get().getPassword()
-                )
+                ))
             ) {
-                MonitorDevice monitorDevice = monitorDeviceOp.get();
-                CurrentEnvironmentData currentEnvironmentData = currentEnvironmentDataRepository
-                        .findByMonitorDevice_Id(monitorDevice.getId())
-                        .orElseGet(() -> {
-                            CurrentEnvironmentData data = new CurrentEnvironmentData();
-                            data.setMonitorDevice(monitorDevice);
-                            return data;
-                        });
-
-                currentEnvironmentData.setTemperature(item.getTemperature());
-                currentEnvironmentData.setHumidity(item.getHumidity());
-                currentEnvironmentData.setCo2Level(item.getCo2Level());
-
-                currentEnvironmentDataRepository.save(currentEnvironmentData);
-
-                return ResponseEntity.status(HttpStatus.CREATED).body(currentEnvironmentData);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            MonitorDevice monitorDevice = monitorDeviceOp.get();
+            CurrentEnvironmentData currentEnvironmentData = currentEnvironmentDataRepository
+                    .findByMonitorDevice_Id(monitorDevice.getId())
+                    .orElseGet(() -> {
+                        CurrentEnvironmentData nCurrentEnvironmentData = new CurrentEnvironmentData();
+                        nCurrentEnvironmentData.setCo2LevelSum(0);
+                        nCurrentEnvironmentData.setTemperatureSum(0);
+                        nCurrentEnvironmentData.setHumiditySum(0);
+                        nCurrentEnvironmentData.setNumAggregator(0);
+                        nCurrentEnvironmentData.setMonitorDevice(monitorDevice);
+                        nCurrentEnvironmentData.setLastHistoryUpdate(item.getMeasuredAt());
+                        return nCurrentEnvironmentData;
+                    });
+
+            currentEnvironmentData.setTemperature(item.getTemperature());
+            currentEnvironmentData.setHumidity(item.getHumidity());
+            currentEnvironmentData.setCo2Level(item.getCo2Level());
+
+            currentEnvironmentData.addTemperatureSum(item.getTemperature());
+            currentEnvironmentData.addHumiditySum(item.getHumidity());
+            currentEnvironmentData.addCo2LevelSum(item.getCo2Level());
+
+            currentEnvironmentData.incrementNumAggregator();
+
+            Instant lastHistoryUpdate = currentEnvironmentData.getLastHistoryUpdate();
+
+            final int NUM_MINUTES_UNTIL_NEXT_SAVE = 15;
+
+            if (!item.getMeasuredAt().isBefore(lastHistoryUpdate.plus(Duration.ofMinutes(NUM_MINUTES_UNTIL_NEXT_SAVE)))) {
+                EnvironmentDataHistory environmentDataHistory = new EnvironmentDataHistory();
+
+                float numberOfMeasurements = currentEnvironmentData.getNumAggregator();
+
+                if (numberOfMeasurements > 0) {
+                    environmentDataHistory.setCo2Level(currentEnvironmentData.getCo2LevelSum() / numberOfMeasurements);
+                    environmentDataHistory.setHumidity(currentEnvironmentData.getHumiditySum() / numberOfMeasurements);
+                    environmentDataHistory.setTemperature(currentEnvironmentData.getTemperatureSum() / numberOfMeasurements);
+                    environmentDataHistory.setMeasuredAt(item.getMeasuredAt());
+                    environmentDataHistory.setMonitorDevice(monitorDeviceOp.get());
+                
+                    environmentDataRepository.save(environmentDataHistory);
+                }
+
+                currentEnvironmentData.setCo2LevelSum(0);
+                currentEnvironmentData.setTemperatureSum(0);
+                currentEnvironmentData.setHumiditySum(0);
+                currentEnvironmentData.setNumAggregator(0);
+                currentEnvironmentData.setLastHistoryUpdate(item.getMeasuredAt());
+
+            }
+        
+            currentEnvironmentDataRepository.save(currentEnvironmentData);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(currentEnvironmentData);
             
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
