@@ -44,8 +44,6 @@ public class AdminInitializer implements ApplicationRunner {
             );
         }
 
-        System.out.println(adminPassword);
-
         userRepository.upsertAdmin(
             adminUsername,
             passwordEncoder.encode(adminPassword),
