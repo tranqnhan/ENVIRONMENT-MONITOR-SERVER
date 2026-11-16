@@ -1,7 +1,5 @@
 package com.ems.environment_monitor_server.controller;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ems.environment_monitor_server.entity.EnvironmentData;
+import com.ems.environment_monitor_server.entity.CurrentEnvironmentData;
+import com.ems.environment_monitor_server.entity.EnvironmentDataHistory;
+import com.ems.environment_monitor_server.entity.MonitorDevice;
+import com.ems.environment_monitor_server.repository.CurrentEnvironmentDataRepository;
 import com.ems.environment_monitor_server.repository.EnvironmentDataRepository;
 import com.ems.environment_monitor_server.repository.MonitorDeviceRepository;
 import com.ems.environment_monitor_server.request.EnvironmentDataPost;
@@ -31,33 +32,27 @@ class EnvironmentDataController {
     @Autowired
     MonitorDeviceRepository monitorDeviceRepository;
 
+    @Autowired 
+    CurrentEnvironmentDataRepository currentEnvironmentDataRepository;
+
     @Autowired
     PasswordEncoder passwordEncoder;
 
-    public EnvironmentDataController(EnvironmentDataRepository environmentDataRepository, MonitorDeviceRepository monitorDeviceRepository, PasswordEncoder passwordEncoder) {
+    public EnvironmentDataController(
+        EnvironmentDataRepository environmentDataRepository, 
+        MonitorDeviceRepository monitorDeviceRepository, 
+        CurrentEnvironmentDataRepository currentEnvironmentDataRepository, 
+        PasswordEncoder passwordEncoder
+    ) {
         this.environmentDataRepository = environmentDataRepository;
         this.monitorDeviceRepository = monitorDeviceRepository;
+        this.currentEnvironmentDataRepository = currentEnvironmentDataRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @GetMapping
-    public ResponseEntity<List<EnvironmentData>> getAll() {
-        try {
-            List<EnvironmentData> items = new ArrayList<>();
-
-            environmentDataRepository.findAll().forEach(items::add);
-
-            if (items.isEmpty())
-                return ResponseEntity.noContent().build();
-            return ResponseEntity.ok(items);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();        
-        }
-    }
-
     @GetMapping("{id}")
-    public ResponseEntity<EnvironmentData> getById(@PathVariable("id") Long id) {
-        Optional<EnvironmentData> existingItemOptional = environmentDataRepository.findById(id);
+    public ResponseEntity<EnvironmentDataHistory> getById(@PathVariable("id") Long id) {
+        Optional<EnvironmentDataHistory> existingItemOptional = environmentDataRepository.findById(id);
 
         if (existingItemOptional.isPresent()) {
             return ResponseEntity.ok(existingItemOptional.get());
@@ -67,24 +62,25 @@ class EnvironmentDataController {
     }
 
     @PostMapping("add")
-    public ResponseEntity<EnvironmentData> create(
+    public ResponseEntity<EnvironmentDataHistory> add(
         @RequestBody EnvironmentDataPost item
     ) {
         try {
             String monitorDeviceUsername = item.getMonitorDeviceUsername();
+            Optional<MonitorDevice> monitorDeviceOp = monitorDeviceRepository.findByUsername(monitorDeviceUsername);
             if (
-                monitorDeviceRepository.existsByUsername(monitorDeviceUsername) &&
+                monitorDeviceOp.isPresent() &&
                 passwordEncoder.matches(
                     item.getMonitorDevicePassword(), 
-                    monitorDeviceRepository.findByUsername(monitorDeviceUsername).getPassword()
+                    monitorDeviceOp.get().getPassword()
                 )
             ) {
-                EnvironmentData data = new EnvironmentData();
+                EnvironmentDataHistory data = new EnvironmentDataHistory();
                 data.setCo2Level(item.getCo2Level());
                 data.setHumidity(item.getHumidity());
                 data.setTemperature(item.getTemperature());
                 data.setMeasuredAt(item.getMeasuredAt());
-                data.setMonitorDeviceUsername(monitorDeviceUsername);
+                data.setMonitorDevice(monitorDeviceOp.get());
                 
                 environmentDataRepository.save(data);
                 return ResponseEntity.status(HttpStatus.CREATED).body(data);
@@ -96,6 +92,46 @@ class EnvironmentDataController {
             return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
         }
     }
+
+    @PostMapping("current")
+    public ResponseEntity<CurrentEnvironmentData> current (
+        @RequestBody EnvironmentDataPost item
+    ) {
+        try {
+            String monitorDeviceUsername = item.getMonitorDeviceUsername();
+            Optional<MonitorDevice> monitorDeviceOp = monitorDeviceRepository.findByUsername(monitorDeviceUsername);
+            if (
+                monitorDeviceOp.isPresent() &&
+                passwordEncoder.matches(
+                    item.getMonitorDevicePassword(), 
+                    monitorDeviceOp.get().getPassword()
+                )
+            ) {
+                MonitorDevice monitorDevice = monitorDeviceOp.get();
+                CurrentEnvironmentData currentEnvironmentData = currentEnvironmentDataRepository
+                        .findByMonitorDevice_Id(monitorDevice.getId())
+                        .orElseGet(() -> {
+                            CurrentEnvironmentData data = new CurrentEnvironmentData();
+                            data.setMonitorDevice(monitorDevice);
+                            return data;
+                        });
+
+                currentEnvironmentData.setTemperature(item.getTemperature());
+                currentEnvironmentData.setHumidity(item.getHumidity());
+                currentEnvironmentData.setCo2Level(item.getCo2Level());
+
+                currentEnvironmentDataRepository.save(currentEnvironmentData);
+
+                return ResponseEntity.status(HttpStatus.CREATED).body(currentEnvironmentData);
+            }
+
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).build();
+        }
+    }
+
 
     @DeleteMapping("{id}")
     public ResponseEntity<HttpStatus> delete(@PathVariable("id") Long id) {

@@ -4,12 +4,15 @@ import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
-public class EnvironmentData {
+public class EnvironmentDataHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,11 +30,12 @@ public class EnvironmentData {
     @Column(nullable = false)
     private Instant measuredAt;
 
-    @Column(nullable = false)
-    private String monitorDeviceUsername;
-
-    public EnvironmentData() {
-    }
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+        name = "monitorDeviceId",
+        nullable = false
+    )
+    private MonitorDevice monitorDevice;
 
     public Long getId() {
         return id;
@@ -65,19 +69,19 @@ public class EnvironmentData {
         this.co2Level = co2Level;
     }
 
-    public String getMonitorDeviceUsername() {
-        return monitorDeviceUsername;
-    }
-
-    public void setMonitorDeviceUsername(String deviceName) {
-        this.monitorDeviceUsername = deviceName;
-    }
-
     public Instant getMeasuredAt() {
         return measuredAt;
     }
 
     public void setMeasuredAt(Instant measuredAt) {
         this.measuredAt = measuredAt;
+    }
+
+    public MonitorDevice getMonitorDevice() {
+        return monitorDevice;
+    }
+
+    public void setMonitorDevice(MonitorDevice monitorDevice) {
+        this.monitorDevice = monitorDevice;
     }
 }

@@ -5,10 +5,10 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
-import com.ems.environment_monitor_server.entity.EnvironmentData;
+import com.ems.environment_monitor_server.entity.EnvironmentDataHistory;
 
 @RepositoryRestResource
-public interface EnvironmentDataRepository extends CrudRepository<EnvironmentData, Long> {
-    List<EnvironmentData> findByMonitorDeviceUsername(String monitorDeviceUsername);
-    List<EnvironmentData> deleteByMonitorDeviceUsername(String monitorDeviceUsername);
+public interface EnvironmentDataRepository extends CrudRepository<EnvironmentDataHistory, Long> {
+    List<EnvironmentDataHistory> findByMonitorDevice_Username(String monitorDeviceUsername);
+    void deleteByMonitorDevice_Username(String monitorDeviceUsername);
 }
