@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ems.environment_monitor_server.pojo.AuthRequest;
 import com.ems.environment_monitor_server.repository.UserRepository;
-import com.ems.environment_monitor_server.request.AuthRequest;
 
 @RestController
 @RequestMapping("server")

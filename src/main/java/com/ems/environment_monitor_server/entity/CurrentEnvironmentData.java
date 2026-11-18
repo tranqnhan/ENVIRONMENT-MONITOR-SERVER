@@ -44,7 +44,7 @@ public class CurrentEnvironmentData {
     private int co2LevelSum;
 
     @Column(nullable = false)
-    private int numAggregator;
+    private int numberOfMeasurements;
     
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
@@ -141,16 +141,16 @@ public class CurrentEnvironmentData {
         this.co2LevelSum += co2LevelSum;
     }
 
-    public int getNumAggregator() {
-        return numAggregator;
+    public int getNumberOfMeasurements() {
+        return numberOfMeasurements;
     }
 
-    public void setNumAggregator(int numAggregator) {
-        this.numAggregator = numAggregator;
+    public void setNumberOfMeasurements(int numberOfMeasurements) {
+        this.numberOfMeasurements = numberOfMeasurements;
     }
 
-    public void incrementNumAggregator() {
-        numAggregator++;
+    public void incrementNumberOfMeasurements() {
+        numberOfMeasurements++;
     }
 
     public Instant getLastMeasuredAt() {

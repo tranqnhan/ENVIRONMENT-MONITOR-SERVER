@@ -19,16 +19,19 @@ public class EnvironmentDataHistory {
     private Long id;
 
     @Column(nullable = false)
-    private float temperature;
+    private float averageTemperature;
 
     @Column(nullable = false)
-    private float humidity;
+    private float averageHumidity;
 
     @Column(nullable = false)
-    private float co2Level;
+    private float averageCo2Level;
 
     @Column(nullable = false)
     private Instant measuredAt;
+
+    @Column(nullable = false)
+    private int numberOfMeasurements;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
@@ -45,28 +48,28 @@ public class EnvironmentDataHistory {
         this.id = id;
     }
 
-    public float getTemperature() {
-        return temperature;
+    public float getAverageTemperature() {
+        return averageTemperature;
     }
 
-    public void setTemperature(float temperature) {
-        this.temperature = temperature;
+    public void setAverageTemperature(float temperature) {
+        this.averageTemperature = temperature;
     }
 
-    public float getHumidity() {
-        return humidity;
+    public float getAverageHumidity() {
+        return averageHumidity;
     }
 
-    public void setHumidity(float humidity) {
-        this.humidity = humidity;
+    public void setAverageHumidity(float humidity) {
+        this.averageHumidity = humidity;
     }
 
-    public float getCo2Level() {
-        return co2Level;
+    public float getAverageCo2Level() {
+        return averageCo2Level;
     }
 
-    public void setCo2Level(float co2Level) {
-        this.co2Level = co2Level;
+    public void setAverageCo2Level(float co2Level) {
+        this.averageCo2Level = co2Level;
     }
 
     public Instant getMeasuredAt() {
@@ -83,5 +86,13 @@ public class EnvironmentDataHistory {
 
     public void setMonitorDevice(MonitorDevice monitorDevice) {
         this.monitorDevice = monitorDevice;
+    }
+
+    public int getNumberOfMeasurements() {
+        return numberOfMeasurements;
+    }
+
+    public void setNumberOfMeasurements(int numberOfMeasurements) {
+        this.numberOfMeasurements = numberOfMeasurements;
     }
 }

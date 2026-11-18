@@ -1,4 +1,4 @@
-package com.ems.environment_monitor_server.request;
+package com.ems.environment_monitor_server.pojo;
 
 public class MonitorDeviceRegistration {
     private String serverAdminPassword;

@@ -1,20 +1,20 @@
-package com.ems.environment_monitor_server.request;
+package com.ems.environment_monitor_server.pojo;
 
 import java.time.Instant;
 
 public class EnvironmentDataPost {
-    private int temperature;
+    private float temperature;
     private float humidity;
     private int co2Level;
     private Instant measuredAt;
     private String monitorDeviceUsername;
     private String monitorDevicePassword;
 
-    public int getTemperature() {
+    public float getTemperature() {
         return temperature;
     }
 
-    public void setTemperature(int temperature) {
+    public void setTemperature(float temperature) {
         this.temperature = temperature;
     }
 
