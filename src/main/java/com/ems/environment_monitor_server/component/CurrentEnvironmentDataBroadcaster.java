@@ -6,7 +6,7 @@ import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import com.ems.environment_monitor_server.pojo.CurrentEnvironmentUpdate;
-import com.ems.environment_monitor_server.pojo.CurrentEnvironmentUpdateGet;
+import com.ems.environment_monitor_server.pojo.EnvironmentDataPoint;
 
 @Component
 public class CurrentEnvironmentDataBroadcaster {
@@ -21,7 +21,7 @@ public class CurrentEnvironmentDataBroadcaster {
     public void onUpdated(CurrentEnvironmentUpdate update) {
         messaging.convertAndSend(
             "/topic/" + update.getMonitorDeviceUsername() + "/current",
-            new CurrentEnvironmentUpdateGet(update)
+            new EnvironmentDataPoint(update)
         );
     }
 }

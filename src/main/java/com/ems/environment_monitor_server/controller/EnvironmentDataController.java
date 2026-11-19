@@ -2,6 +2,7 @@ package com.ems.environment_monitor_server.controller;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -16,19 +17,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ems.environment_monitor_server.entity.CurrentEnvironmentData;
 import com.ems.environment_monitor_server.entity.EnvironmentDataHistory;
 import com.ems.environment_monitor_server.entity.MonitorDevice;
 import com.ems.environment_monitor_server.pojo.CurrentEnvironmentUpdate;
-import com.ems.environment_monitor_server.pojo.EnvironmentDataGet;
+import com.ems.environment_monitor_server.pojo.EnvironmentDataPoint;
 import com.ems.environment_monitor_server.pojo.EnvironmentDataPost;
+import com.ems.environment_monitor_server.pojo.EnvironmentDataRange;
 import com.ems.environment_monitor_server.repository.CurrentEnvironmentDataRepository;
 import com.ems.environment_monitor_server.repository.EnvironmentDataHistoryRepository;
 import com.ems.environment_monitor_server.repository.MonitorDeviceRepository;
 
 import jakarta.transaction.Transactional;
+
 
 @RestController
 @RequestMapping("data")
@@ -63,25 +67,66 @@ class EnvironmentDataController {
         this.events = events;
     }
 
-    @GetMapping("range")
-    public ResponseEntity<List<EnvironmentDataHistory>> getById(@RequestBody EnvironmentDataGet item) 
+    @PostMapping("range")
+    public ResponseEntity<List<EnvironmentDataPoint>> getEnvironmentDataRange(@RequestBody EnvironmentDataRange item) 
     {
-        List<EnvironmentDataHistory> environmentDataHistory = environmentDataHistoryRepository.findByMonitorDevice_UsernameAndMeasuredAtBetween(
+        List<EnvironmentDataPoint> environmentDataPoints = new ArrayList<>();
+
+        Iterable<EnvironmentDataHistory> environmentDataHistoryIte = environmentDataHistoryRepository.findByMonitorDevice_UsernameAndMeasuredAtBetween(
             item.getMonitorDeviceUsername(), 
-            item.getStartDate(),
-            item.getEndDate()
+            item.getStartTime(),
+            item.getEndTime()
+        );
+        
+
+        environmentDataHistoryIte.forEach( (data) -> {
+                environmentDataPoints.add(
+                    new EnvironmentDataPoint(
+                        data.getAverageTemperature(),
+                        data.getAverageHumidity(),
+                        (int)data.getAverageCo2Level(),
+                        data.getMeasuredAt()
+                    )
+                );
+            }
         );
 
-        if (!environmentDataHistory.isEmpty()) {
-            return ResponseEntity.ok(environmentDataHistory);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok(environmentDataPoints);
     }
+
+    @GetMapping("current")
+    public ResponseEntity<EnvironmentDataPoint> getCurrentEnvironmentData(@RequestParam("monitorDeviceUsername") String monitorDeviceUsername) {
+        Optional<MonitorDevice> monitorDeviceOp = monitorDeviceRepository.findByUsername(monitorDeviceUsername);
+        if (monitorDeviceOp.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+
+        Optional<CurrentEnvironmentData> currentEnvironmentDataOp = 
+            currentEnvironmentDataRepository.findByMonitorDevice_Username(monitorDeviceUsername);
+
+        EnvironmentDataPoint currentEnvironmentUpdateGet = new EnvironmentDataPoint();
+
+        if (currentEnvironmentDataOp.isEmpty()) {
+            currentEnvironmentUpdateGet.setCo2Level(0);
+            currentEnvironmentUpdateGet.setTemperature(0);
+            currentEnvironmentUpdateGet.setHumidity(0);
+            currentEnvironmentUpdateGet.setMeasuredAt(Instant.MIN);
+        } else {
+            CurrentEnvironmentData currentEnvironmentData = currentEnvironmentDataOp.get();
+            currentEnvironmentUpdateGet.setCo2Level(currentEnvironmentData.getCo2Level());
+            currentEnvironmentUpdateGet.setTemperature(currentEnvironmentData.getTemperature());
+            currentEnvironmentUpdateGet.setHumidity(currentEnvironmentData.getHumidity());
+            currentEnvironmentUpdateGet.setMeasuredAt(currentEnvironmentData.getLastMeasuredAt());
+        }
+
+
+        return ResponseEntity.ok(currentEnvironmentUpdateGet);
+    }
+    
 
     @Transactional
     @PostMapping("add")
-    public ResponseEntity<CurrentEnvironmentData> current(@RequestBody EnvironmentDataPost item) 
+    public ResponseEntity<Void> addCurrentEnvironmentData(@RequestBody EnvironmentDataPost item) 
     {
         try {
             String monitorDeviceUsername = item.getMonitorDeviceUsername();
@@ -161,7 +206,7 @@ class EnvironmentDataController {
 
             events.publishEvent(currentEnvironmentUpdate);
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(currentEnvironmentData);
+            return ResponseEntity.status(HttpStatus.CREATED).build();
             
         } catch (Exception e) {
             System.err.println("Failed to save environment data: " + e.toString());

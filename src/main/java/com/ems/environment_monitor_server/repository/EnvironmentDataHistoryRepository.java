@@ -11,6 +11,6 @@ import com.ems.environment_monitor_server.entity.EnvironmentDataHistory;
 @RepositoryRestResource
 public interface EnvironmentDataHistoryRepository extends CrudRepository<EnvironmentDataHistory, Long> {
     List<EnvironmentDataHistory> findByMonitorDevice_Username(String monitorDeviceUsername);
-    List<EnvironmentDataHistory> findByMonitorDevice_UsernameAndMeasuredAtBetween(String monitorDeviceUsername, Instant startDate, Instant endDate);
+    Iterable<EnvironmentDataHistory> findByMonitorDevice_UsernameAndMeasuredAtBetween(String monitorDeviceUsername, Instant startDate, Instant endDate);
     void deleteByMonitorDevice_Username(String monitorDeviceUsername);
 }
