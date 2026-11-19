@@ -40,21 +40,15 @@ class MonitorDeviceController {
 
 
     @PostMapping("register")
-    public ResponseEntity<Void> registerDevice(@RequestBody MonitorDeviceRegistration registration) {
+    public ResponseEntity<String> registerDevice(@RequestBody MonitorDeviceRegistration registration) {
         String serverAdminPassword = userRepository.findByUsername("admin").getPasswordHash();
         if (passwordEncoder.matches(registration.getServerAdminPassword(), serverAdminPassword)) {
-
-            if (monitorDeviceRepository.existsByUsername(registration.getMonitorDeviceUsername())) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).build();
-            }
-
             MonitorDevice device = new MonitorDevice();
-            device.setUsername(registration.getMonitorDeviceUsername());
             device.setPassword(passwordEncoder.encode(registration.getMonitorDevicePassword()));
 
-            monitorDeviceRepository.save(device);
+            MonitorDevice savedMonitorDevice = monitorDeviceRepository.save(device);
 
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            return ResponseEntity.ok(savedMonitorDevice.getUsername());
         } 
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
