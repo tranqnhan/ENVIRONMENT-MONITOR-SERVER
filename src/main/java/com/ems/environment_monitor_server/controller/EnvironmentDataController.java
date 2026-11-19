@@ -27,6 +27,7 @@ import com.ems.environment_monitor_server.pojo.CurrentEnvironmentUpdate;
 import com.ems.environment_monitor_server.pojo.EnvironmentDataPoint;
 import com.ems.environment_monitor_server.pojo.EnvironmentDataPost;
 import com.ems.environment_monitor_server.pojo.EnvironmentDataRange;
+import com.ems.environment_monitor_server.pojo.EnvironmentHistoryUpdate;
 import com.ems.environment_monitor_server.repository.CurrentEnvironmentDataRepository;
 import com.ems.environment_monitor_server.repository.EnvironmentDataHistoryRepository;
 import com.ems.environment_monitor_server.repository.MonitorDeviceRepository;
@@ -72,12 +73,15 @@ class EnvironmentDataController {
     {
         List<EnvironmentDataPoint> environmentDataPoints = new ArrayList<>();
 
-        Iterable<EnvironmentDataHistory> environmentDataHistoryIte = environmentDataHistoryRepository.findByMonitorDevice_UsernameAndMeasuredAtBetween(
-            item.getMonitorDeviceUsername(), 
-            item.getStartTime(),
-            item.getEndTime()
-        );
-        
+        Iterable<EnvironmentDataHistory> environmentDataHistoryIte = 
+            environmentDataHistoryRepository.findByMonitorDevice_UsernameAndMeasuredAtBetweenOrderByMeasuredAtAsc
+            (
+                item.getMonitorDeviceUsername(), 
+                item.getStartTime(),
+                item.getEndTime()
+            )
+        ;
+    
 
         environmentDataHistoryIte.forEach( (data) -> {
                 environmentDataPoints.add(
@@ -181,8 +185,15 @@ class EnvironmentDataController {
                     environmentDataHistory.setMeasuredAt(item.getMeasuredAt());
                     environmentDataHistory.setNumberOfMeasurements((int)numberOfMeasurements);
                     environmentDataHistory.setMonitorDevice(monitorDeviceOp.get());
-                
+                    
                     environmentDataHistoryRepository.save(environmentDataHistory);
+                    events.publishEvent(new EnvironmentHistoryUpdate(
+                        environmentDataHistory.getAverageTemperature(),
+                        environmentDataHistory.getAverageHumidity(),
+                        (int)environmentDataHistory.getAverageCo2Level(),
+                        environmentDataHistory.getMeasuredAt(),
+                        environmentDataHistory.getMonitorDevice().getUsername()
+                    ));
                 }
 
                 currentEnvironmentData.setCo2LevelSum(0);

@@ -25,6 +25,13 @@ public class EnvironmentDataPoint {
         this.measuredAt = update.getMeasuredAt();
     }
 
+    public EnvironmentDataPoint(EnvironmentHistoryUpdate update) {
+        this.temperature = update.getTemperature();
+        this.humidity = update.getHumidity();
+        this.co2Level = update.getCo2Level();
+        this.measuredAt = update.getMeasuredAt();
+    }
+    
     public float getTemperature() {
         return temperature;
     }
