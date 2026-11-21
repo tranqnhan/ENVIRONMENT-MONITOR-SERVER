@@ -114,7 +114,7 @@ class EnvironmentDataController {
             currentEnvironmentUpdateGet.setCo2Level(0);
             currentEnvironmentUpdateGet.setTemperature(0);
             currentEnvironmentUpdateGet.setHumidity(0);
-            currentEnvironmentUpdateGet.setMeasuredAt(Instant.MIN);
+            currentEnvironmentUpdateGet.setMeasuredAt(Instant.now());
         } else {
             CurrentEnvironmentData currentEnvironmentData = currentEnvironmentDataOp.get();
             currentEnvironmentUpdateGet.setCo2Level(currentEnvironmentData.getCo2Level());
