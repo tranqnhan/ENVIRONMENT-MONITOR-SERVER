@@ -2,6 +2,12 @@
 
 This is a Spring Boot server that collect data from environment monitor device and stores it in a PostgreSQL database. Supports multiple environment monitor devices.
 
+## Websocket (ws)
+
+#### topic/{monitorDeviceUsername}/current
+
+Get live update of the current environment conditions.
+
 ## REST API
 
 #### data/range
